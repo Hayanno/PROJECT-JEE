@@ -19,9 +19,10 @@ public class Group {
 	/* ------ Setters ------ */
 	public void setId(int id) 								{ this.id = id; 			}
 	public void setName(String name) 						{ this.name = name; 		}
-	public void setPersons(Map<Integer, Person> persons) 	{ this.persons = persons; 	}
+	//public void setPersons(Map<Integer, Person> persons) 	{ this.persons = persons; 	}
 	
 	/* ------ Other ------ */
+	public Person getPerson(int person_id) 	{ return persons.get(person_id); 	}
 	public void addPerson(Person person) 	{ persons.put(person.getId(), person); 		}
-	public void deletePerson(Person person) { persons.remove(person.getId(), person); 	}
+	//public void deletePerson(Person person) { persons.remove(person.getId(), person); 	}
 }

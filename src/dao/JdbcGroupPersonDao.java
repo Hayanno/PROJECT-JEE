@@ -1,5 +1,7 @@
 package dao;
 
+import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,13 +15,16 @@ import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import models.Group;
 import models.Person;
@@ -32,7 +37,7 @@ public class JdbcGroupPersonDao implements GroupPersonDao {
 	private String SELECT_ALL_GROUP_PERSON = 
 		"SELECT g.id, g.name, p.id, p.firstname, p.lastname, p.email, p.website, p.birthdate, p.password, p.group_id "
 		+ "FROM `" + GROUP_TABLE_NAME + "` AS g "
-		+ "LEFT JOIN `" + PERSON_TABLE_NAME + "` AS p "
+		+ "INNER JOIN `" + PERSON_TABLE_NAME + "` AS p "
 		+ "ON g.id = p.group_id";
 	
 	private JdbcTemplate jdbcTemplate;
@@ -49,35 +54,54 @@ public class JdbcGroupPersonDao implements GroupPersonDao {
 	}
 	
 	@Override
-	public List<Person> findAllPerson(long group_id) {
+	public List<Person> findAllPerson(final long group_id) {
 		return jdbcTemplate.query(SELECT_ALL_GROUP_PERSON + " WHERE g.id = ?",
 			new Object[]{group_id}, new PersonGroupExtractor());
 	}
 
 	@Override
-	public Group findGroupById(long id) {
+	public Group findGroupById(final long id) {
 		List<Person> persons = this.findAllPerson(id);
+		
+		if(persons.isEmpty())
+			throw new EmptyResultDataAccessException(1);
 		
 		return persons.get(0).getGroup();
 	}
 
 	@Override
-	public Person findPersonById(long id) {
-		Group group = jdbcTemplate.queryForObject("SELECT g.id WHERE p.id = ?",
-				new Object[]{id}, new GroupMapper());
+	public Person findPersonById(final long id) {
+		List<Person> persons = jdbcTemplate.query(
+				SELECT_ALL_GROUP_PERSON
+				+ " WHERE g.id = (SELECT pe.group_id FROM `" + PERSON_TABLE_NAME + "` AS pe WHERE pe.id = ?)",
+				new Object[]{id}, new PersonGroupExtractor());
 		
-		return findGroupById(group.getId()).getPersons().get(id);
+		for(Person p: persons) {
+			if(p.getId() == id)
+				return p;
+		}
+			
+		throw new EmptyResultDataAccessException(1);
 	}
 
 	@Override
+	@Transactional
 	public void saveGroup(Group g) {
 		// First we save/update the Group
 		if(g.getId() == 0) {
 			KeyHolder keyHolder = new GeneratedKeyHolder();
 			
 			jdbcTemplate.update(
-				"INSERT INTO `" + GROUP_TABLE_NAME + "` (name) values (?)",
-				g.getName(), keyHolder);
+				new PreparedStatementCreator() {
+					@Override
+			        public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+			            PreparedStatement ps = connection.prepareStatement("INSERT INTO `" + GROUP_TABLE_NAME + "` (name) values (?)",
+			            		new String[]{"id"});
+			            ps.setString(1, g.getName());
+			            return ps;
+			        }
+			    },
+				keyHolder);
 			
 			int id = keyHolder.getKey().intValue();
 			g.setId(id);
@@ -90,20 +114,35 @@ public class JdbcGroupPersonDao implements GroupPersonDao {
 		// Then we update all Person
 		List<Person> personsToUpdate = g.getPersons().values().stream().filter(p -> p.getId() != 0).collect(Collectors.toList());
 		
-		jdbcTemplate.batchUpdate("UPDATE `" + PERSON_TABLE_NAME + "` "
-					+ "SET firstname = ?, lastname = ?, email = ?, website = ?, birthdate = ?, password = ?, group_id = ? "
-					+ "WHERE id = ?",
-					new PersonBatch(personsToUpdate));
+		if(!personsToUpdate.isEmpty())
+			jdbcTemplate.batchUpdate("UPDATE `" + PERSON_TABLE_NAME + "` "
+				+ "SET firstname = ?, lastname = ?, email = ?, website = ?, birthdate = ?, password = ?, group_id = ? "
+				+ "WHERE id = ?",
+				new PersonBatch(personsToUpdate));
 		
 		// Finally we save all new Person (we can't use batch insert because we can't retrieve auto-generated key from batch in JDBC)
 		g.getPersons().values().stream().filter(p -> p.getId() == 0).forEach(p -> {
 				KeyHolder keyHolder = new GeneratedKeyHolder();
-				
+
 				jdbcTemplate.update(
-					"INSERT INTO `" + PERSON_TABLE_NAME + "` "
-					+ "(firstname, lastname, email, website, birthdate, password, group_id) values (?, ?, ?, ?, ?, ?, ?)",
-					p.getFirstname(), p.getLastname(), p.getEmail(), p.getWebsite(),
-					p.getBirthdate(), p.getPassword(), g.getId(),
+					new PreparedStatementCreator() {
+						@Override
+				        public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+				            PreparedStatement ps = connection.prepareStatement(
+				            	"INSERT INTO `" + PERSON_TABLE_NAME + "` "
+				            	+ "(firstname, lastname, email, website, password, birthdate, group_id) values (?, ?, ?, ?, ?, ?, ?)",
+				            	new String[]{"id"});
+				            
+				            ps.setString(1, p.getFirstname());
+				            ps.setString(2, p.getLastname());
+				            ps.setString(3, p.getEmail());
+				            ps.setString(4, p.getWebsite());
+				            ps.setString(5, p.getPassword());
+				            ps.setDate(6, Date.valueOf(p.getBirthdate()));
+				            ps.setInt(7, g.getId());
+				            return ps;
+				        }
+				    },
 					keyHolder);
 				
 				p.setId(keyHolder.getKey().intValue());		
@@ -111,11 +150,13 @@ public class JdbcGroupPersonDao implements GroupPersonDao {
 	}
 
 	@Override
+	@Transactional
 	public void savePerson(Person person) {
 		saveGroup(person.getGroup());
 	}
 
 	@Override
+	@Transactional
 	public void deleteGroup(Group group) {
 		jdbcTemplate.update("DELETE FROM `" + PERSON_TABLE_NAME + "` WHERE group_id = ?", group.getId());
 		jdbcTemplate.update("DELETE FROM `" + GROUP_TABLE_NAME + "` WHERE id = ?", group.getId());
@@ -148,13 +189,18 @@ public class JdbcGroupPersonDao implements GroupPersonDao {
 		@Override
 		public Person mapRow(ResultSet rs, int rowNum) throws SQLException {
 			Person person = new Person();
+			Date date = rs.getDate("p.birthdate");
 			
+			if(date == null)
+				person.setBirthdate(null);
+			else
+				person.setBirthdate(date.toLocalDate());
+				
 			person.setId(rs.getInt("p.id"));
 			person.setEmail(rs.getString("p.email"));
 			person.setWebsite(rs.getString("p.website"));
 			person.setPassword(rs.getString("p.password"));
 			person.setLastname(rs.getString("p.lastname"));
-			person.setBirthdate(rs.getDate("p.birthdate"));
 			person.setFirstname(rs.getString("p.firstname"));
 			
 			return person;
@@ -233,8 +279,8 @@ public class JdbcGroupPersonDao implements GroupPersonDao {
 			ps.setString(2, person.getLastname());
 			ps.setString(3, person.getEmail());
 			ps.setString(4, person.getWebsite());
-			ps.setString(5, person.getPassword());
-			ps.setDate(6, person.getBirthdate());
+			ps.setDate(5, Date.valueOf(person.getBirthdate()));
+			ps.setString(6, person.getPassword());
 			ps.setInt(7, person.getGroup().getId());
 			ps.setInt(8, person.getId());
 		}

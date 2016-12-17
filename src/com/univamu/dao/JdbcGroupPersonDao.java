@@ -1,4 +1,4 @@
-package dao;
+package com.univamu.dao;
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -26,10 +26,10 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import models.Group;
-import models.Person;
+import com.univamu.model.Group;
+import com.univamu.model.Person;
 
-@Repository
+@Repository(value="jdbc")
 public class JdbcGroupPersonDao implements GroupPersonDao {
 	
 	private String GROUP_TABLE_NAME = "group";
@@ -48,18 +48,28 @@ public class JdbcGroupPersonDao implements GroupPersonDao {
     }
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Group> findAllGroup() {
 		return jdbcTemplate.query(SELECT_ALL_GROUP_PERSON,
 			new GroupPersonExtractor());
 	}
 	
 	@Override
+	@Transactional(readOnly = true)
+	public List<Person> findAllPerson() {
+		return jdbcTemplate.query(SELECT_ALL_GROUP_PERSON,
+			new PersonGroupExtractor());
+	}
+	
+	@Override
+	@Transactional(readOnly = true)
 	public List<Person> findAllPerson(final long group_id) {
 		return jdbcTemplate.query(SELECT_ALL_GROUP_PERSON + " WHERE g.id = ?",
 			new Object[]{group_id}, new PersonGroupExtractor());
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Group findGroupById(final long id) {
 		List<Person> persons = this.findAllPerson(id);
 		
@@ -70,6 +80,7 @@ public class JdbcGroupPersonDao implements GroupPersonDao {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Person findPersonById(final long id) {
 		List<Person> persons = jdbcTemplate.query(
 				SELECT_ALL_GROUP_PERSON
@@ -82,6 +93,22 @@ public class JdbcGroupPersonDao implements GroupPersonDao {
 		}
 			
 		throw new EmptyResultDataAccessException(1);
+	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public Person findPersonByEmail(String email) {
+		List<Person> persons = jdbcTemplate.query(
+				SELECT_ALL_GROUP_PERSON
+				+ " WHERE g.id = (SELECT pe.group_id FROM `" + PERSON_TABLE_NAME + "` AS pe WHERE pe.email = ?)",
+				new Object[]{email}, new PersonGroupExtractor());
+		
+		for(Person p: persons) {
+			if(p.getEmail().equals(email))
+				return p;
+		}
+			
+		throw new EmptyResultDataAccessException("Email not found", 1);
 	}
 
 	@Override
@@ -136,10 +163,18 @@ public class JdbcGroupPersonDao implements GroupPersonDao {
 				            ps.setString(1, p.getFirstname());
 				            ps.setString(2, p.getLastname());
 				            ps.setString(3, p.getEmail());
-				            ps.setString(4, p.getWebsite());
 				            ps.setString(5, p.getPassword());
-				            ps.setDate(6, Date.valueOf(p.getBirthdate()));
 				            ps.setInt(7, g.getId());
+				            
+				            if(p.getWebsite().isEmpty())
+					            ps.setString(4, null);
+				            else
+					            ps.setString(4, p.getWebsite());
+				            
+				            if(p.getBirthdate() == null)
+					            ps.setDate(6, null);
+				            else
+					            ps.setDate(6, Date.valueOf(p.getBirthdate()));
 				            return ps;
 				        }
 				    },
@@ -163,6 +198,7 @@ public class JdbcGroupPersonDao implements GroupPersonDao {
 	}
 
 	@Override
+	@Transactional
 	public void deletePerson(Person person) {
 		jdbcTemplate.update("DELETE FROM `" + PERSON_TABLE_NAME + "` WHERE id = ?", person.getId());
 	}
@@ -279,10 +315,14 @@ public class JdbcGroupPersonDao implements GroupPersonDao {
 			ps.setString(2, person.getLastname());
 			ps.setString(3, person.getEmail());
 			ps.setString(4, person.getWebsite());
-			ps.setDate(5, Date.valueOf(person.getBirthdate()));
 			ps.setString(6, person.getPassword());
 			ps.setInt(7, person.getGroup().getId());
-			ps.setInt(8, person.getId());
+			ps.setInt(8, person.getId());			
+
+            if(person.getBirthdate() == null)
+	            ps.setDate(5, null);
+            else
+	            ps.setDate(5, Date.valueOf(person.getBirthdate()));
 		}
 
 		@Override

@@ -1,4 +1,4 @@
-package models;
+package com.univamu.model;
 
 import java.util.HashMap;
 import java.util.Map;

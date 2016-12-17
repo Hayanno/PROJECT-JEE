@@ -1,9 +1,10 @@
-package dao;
+package com.univamu.dao;
 
 import java.util.Collection;
+import java.util.List;
 
-import models.Group;
-import models.Person;
+import com.univamu.model.Group;
+import com.univamu.model.Person;
 
 public interface GroupPersonDao {	
 	/**
@@ -43,6 +44,13 @@ public interface GroupPersonDao {
 	 * @return Person
 	 */
 	Person findPersonById(long id);
+	
+	/**
+	 * find one person from his email address and associate his group
+	 * @param email
+	 * @return Person
+	 */
+	Person findPersonByEmail(String email);
 
 	/**
 	 * retrieve all Group and associate each Person with it
@@ -51,9 +59,16 @@ public interface GroupPersonDao {
 	Collection<Group> findAllGroup();
 
 	/**
-	 * retrieve all Person and associate each Group with it
+	 * retrieve all Person corresponding to the given id and associate each Group with it
 	 * @param group_id
 	 * @return Collection<Person>
 	 */
 	Collection<Person> findAllPerson(long id);
+
+	/**
+	 * retrieve all Person and associate each Group with it
+	 * @param group_id
+	 * @return Collection<Person>
+	 */
+	Collection<Person> findAllPerson();
 }

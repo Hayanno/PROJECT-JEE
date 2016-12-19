@@ -12,17 +12,17 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="javascript:void(0)">Annuaire AMU 2016</a>
+      <a class="navbar-brand ${springViewName == 'welcome' ? 'active' : ''}" href="${pageContext.request.contextPath}">Annuaire AMU 2016</a>
     </div>
     <div class="navbar-collapse collapse navbar-responsive-collapse">
       <ul class="nav navbar-nav">
-        <li class="active"><a href="javascript:void(0)">Accueil</a></li>
-        <li><a href="javascript:void(0)">Groupes</a></li>
-        <li><a href="${pageContext.request.contextPath}/person/list">Personnes</a></li>
+        <li class="${springViewName == '/grouplist' ? 'active' : ''}"><a href="${pageContext.request.contextPath}/group/list">Groupes</a></li>
+        <li class="${springViewName == '/personlist' ? 'active' : ''}"><a href="${pageContext.request.contextPath}/person/list">Personnes</a></li>
       </ul>
-      <form class="navbar-form navbar-left">
+      <form action="${pageContext.request.contextPath}/person/search" method="POST" class="navbar-form navbar-left">
         <div class="form-group">
-          <input type="text" class="form-control col-sm-8" placeholder="Recherche">
+          <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+          <input name="search-value" type="text" class="form-control col-sm-8" placeholder="Rechercher" />
         </div>
       </form>
       <ul class="nav navbar-nav navbar-right">
@@ -32,15 +32,16 @@
             <b class="caret"></b>
           </a>
           <ul class="dropdown-menu" aria-labelledby="ddnavright">
-            <li class="dropdown-header"><a href="javascript:void(0)">Bonjour ${pageContext.request.userPrincipal.name} !</a></li>
+            <li class="dropdown-header"><a href="javascript:void(0)">Bonjour <c:out value="${pageContext.request.userPrincipal.name}"/> !</a></li>
             <li class="divider"></li>
             <c:choose>
 			  <c:when test="${pageContext.request.userPrincipal.name != null}">
-			    <li><a href="javascript:void(0)">Paramètres</a></li>
+			    <li><a href="${pageContext.request.contextPath}/person/account">Paramètres</a></li>
            	  	<li><a href="javascript:void(0)" onclick="document.forms['logoutForm'].submit()">Déconnexion</a></li>
 			  </c:when>
 			  <c:otherwise>
            	  	<li><a href="${pageContext.request.contextPath}/login">Connexion</a></li>
+           	  	<li><a href="${pageContext.request.contextPath}/registration">Inscription</a></li>
 			  </c:otherwise>
 			</c:choose>
           </ul>

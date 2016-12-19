@@ -33,4 +33,8 @@
 	        </list>
 	    </property>
 	</bean>
+	
+	<mvc:interceptors>
+	    <bean class="com.univamu.interceptor.ViewNameInModelInterceptor" />
+	</mvc:interceptors>
 </beans>

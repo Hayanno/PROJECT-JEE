@@ -1,6 +1,7 @@
 package com.univamu.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -164,6 +165,16 @@ public class JdbcGroupPersonDaoTest {
 		
 		assertFalse(group.getPersons().isEmpty());
 		assertEquals(2, group.getPersons().size());
+	}
+	
+	@Test
+	public void findPersonByKeywordTest() {
+		String keyword = "Nicolas";
+		List<Person> persons = jdbcGroupPersonDao.findPersonByKeyword(keyword);
+
+		assertNotNull(persons);
+		assertNotEquals(0, persons.size());
+		assertEquals("Nicolas", persons.get(0).getFirstname());
 	}
 	
 	@Test(expected=EmptyResultDataAccessException.class)

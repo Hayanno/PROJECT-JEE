@@ -53,3 +53,48 @@ html, body, .container, .well {
 .after-datetimepicker {
 	margin: 0 0 0 0;
 }
+
+#welcomeTitles {
+	margin-top: 90px;
+	margin-bottom: 90px;
+}
+
+.navbar-brand.active {
+	color: inherit;
+    background-color: rgba(255,255,255,.1);
+}
+
+.dropdown-header a {
+	cursor: default;
+}
+
+.dropdown-header a:hover {
+	background-color: white!important;
+	color: #333!important;
+}
+
+.navbar .navbar-brand:hover {
+	background-color :rgba(255,255,255,.1)!important;
+}
+
+.navbar-nav > li:hover {
+	background-color :rgba(255,255,255,.1)!important;	
+}
+
+#copyleft {
+	font-size: 12px;
+	color: #9E9E9E;
+}
+
+.form-control[readonly] {
+	cursor: not-allowed;
+}
+
+.form-group .form-control[readonly], .form-control[readonly] {
+	background-image: none!important;
+}
+
+#notFound {
+    margin-top: 30px;
+    margin-bottom: 100px;
+}

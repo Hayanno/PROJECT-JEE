@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -31,6 +33,8 @@ import com.univamu.model.Person;
 
 @Repository(value="jdbc")
 public class JdbcGroupPersonDao implements GroupPersonDao {
+	
+	protected final Log logger = LogFactory.getLog(getClass());
 	
 	private String GROUP_TABLE_NAME = "group";
 	private String PERSON_TABLE_NAME = "person";
@@ -110,6 +114,22 @@ public class JdbcGroupPersonDao implements GroupPersonDao {
 			
 		throw new EmptyResultDataAccessException("Email not found", 1);
 	}
+	
+	@Override
+	@Transactional(readOnly = true)
+	public List<Person> findPersonByKeyword(String keyword) {
+		keyword = "%" + keyword + "%";
+		
+		logger.info("Keyword : " + keyword);
+		
+		List<Person> persons = jdbcTemplate.query(
+				SELECT_ALL_GROUP_PERSON
+				+ " WHERE p.lastname LIKE ? OR p.firstname LIKE ? OR p.website LIKE ? OR g.name LIKE ?",
+				new Object[]{keyword, keyword, keyword, keyword},
+				new PersonGroupExtractor());
+
+		return persons;
+	};
 
 	@Override
 	@Transactional
@@ -187,6 +207,7 @@ public class JdbcGroupPersonDao implements GroupPersonDao {
 	@Override
 	@Transactional
 	public void savePerson(Person person) {
+		person.getGroup().addPerson(person);
 		saveGroup(person.getGroup());
 	}
 
@@ -330,5 +351,5 @@ public class JdbcGroupPersonDao implements GroupPersonDao {
 			return persons.size();
 		}
 		
-	};
+	}
 }

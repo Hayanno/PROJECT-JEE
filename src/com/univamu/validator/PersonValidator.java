@@ -26,6 +26,9 @@ public class PersonValidator implements Validator {
 		return Person.class.equals(clazz);
 	}
 
+	/**
+	 * Validate a given person being created
+	 */
 	@Override
 	public void validate(Object o, Errors err) {
 		Person person = (Person) o;

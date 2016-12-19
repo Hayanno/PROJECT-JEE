@@ -19,6 +19,11 @@ public class PersonDetailsService implements UserDetailsService {
 	@Autowired
 	private GroupPersonDao groupPersonDao;
 	
+	/**
+	 * find one person from his email address and associate his group
+	 * @param email
+	 * @return Person
+	 */
 	@Override
 	@Transactional(readOnly = true)
 	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {

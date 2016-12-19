@@ -1,20 +1,19 @@
 package com.univamu.dao;
 
 import java.util.Collection;
-import java.util.List;
 
 import com.univamu.model.Group;
 import com.univamu.model.Person;
 
 public interface GroupPersonDao {	
 	/**
-	 * save one group
+	 * save one group and his persons
 	 * @param g
 	 */
 	void saveGroup(Group g);
 	
 	/**
-	 *  save one person
+	 *  save one person and his group
 	 *  @param p
 	 */
 	void savePerson(Person p);
@@ -71,4 +70,11 @@ public interface GroupPersonDao {
 	 * @return Collection<Person>
 	 */
 	Collection<Person> findAllPerson();
+
+	/**
+	 * retrieve all Person with the given keyword and associate each Group with it
+	 * @param keyword
+	 * @return Collection<Person>
+	 */
+	Collection<Person> findPersonByKeyword(String keyword);
 }

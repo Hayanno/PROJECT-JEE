@@ -59,4 +59,16 @@ public class SPersonService implements PersonService {
 	public Collection<Person> findAll() {
 		return groupPersonDao.findAllPerson();
 	}
+
+	@Override
+	public void update(Person person) {
+		person.setPassword(bCryptPasswordEncoder.encode(person.getPassword()));
+		
+		groupPersonDao.savePerson(person);
+	}
+
+	@Override
+	public Collection<Person> findByKeyword(String keyword) {
+		return groupPersonDao.findPersonByKeyword(keyword);
+	}
 }

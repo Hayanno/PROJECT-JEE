@@ -8,8 +8,8 @@
 		http://www.springframework.org/schema/security/spring-security.xsd">
 
     <http auto-config="true">
-        <intercept-url pattern="/" access="hasRole('ROLE_USER')"/>
-        <intercept-url pattern="/welcome" access="hasRole('ROLE_USER')"/>
+        <!-- <intercept-url pattern="/" access="hasRole('ROLE_USER')"/>
+        <intercept-url pattern="/welcome" access="hasRole('ROLE_USER')"/> -->
         <form-login login-page="/login" default-target-url="/welcome" authentication-failure-url="/login?error" username-parameter="username" password-parameter="password"/>
         <logout logout-success-url="/login?logout" />
     </http>
@@ -20,9 +20,10 @@
         </authentication-provider>
     </authentication-manager>
 
-    <beans:bean id="personDetailsService" class="com.univamu.service.PersonDetailsService"></beans:bean>
-
     <beans:bean id="encoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder">
         <beans:constructor-arg name="strength" value="11"/>
     </beans:bean>
+
+    <beans:bean id="personDetailsService" class="com.univamu.service.PersonDetailsService"></beans:bean>
+    <beans:bean class="org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler"></beans:bean>
 </beans:beans>

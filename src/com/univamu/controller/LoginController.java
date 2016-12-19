@@ -38,11 +38,21 @@ public class LoginController {
 	@Autowired
 	PersonValidator personValidator;
 	
+	
+	/**
+	 * Inject all available group inside every request
+	 * @return Collection<Group>
+	 */
 	@ModelAttribute("groups")
 	public Collection<Group> listGroups() {
 		return groupService.findAll();
 	}
 
+	/**
+	 * display registration page
+	 * @param model
+	 * @return
+	 */
 	@RequestMapping(value = "/registration", method = RequestMethod.GET)
 	public String registration(Model model) {
 		model.addAttribute("personForm", new Person());
@@ -50,8 +60,15 @@ public class LoginController {
 		return "registration";
 	}
 
+	/**
+	 * validate and save new person when registration submitted
+	 * @param personForm
+	 * @param bindingResult
+	 * @param request
+	 * @return String
+	 */
 	@RequestMapping(value = "/registration", method = RequestMethod.POST)
-	public String registration(@ModelAttribute("personForm") Person personForm, BindingResult bindingResult, Model model, HttpServletRequest request) {
+	public String registration(@ModelAttribute("personForm") Person personForm, BindingResult bindingResult, HttpServletRequest request) {
 		personValidator.validate(personForm, bindingResult);
 		
 		if(bindingResult.hasErrors()) {
@@ -67,6 +84,13 @@ public class LoginController {
 		return "redirect:/welcome";
 	}
 
+	/**
+	 * Display login page
+	 * @param model
+	 * @param error
+	 * @param logout
+	 * @return String
+	 */
 	@RequestMapping(value = "/login", method = RequestMethod.GET)
 	public String login(Model model, String error, String logout) {
 		if(error != null)

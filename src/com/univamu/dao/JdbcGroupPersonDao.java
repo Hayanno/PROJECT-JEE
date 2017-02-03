@@ -117,15 +117,15 @@ public class JdbcGroupPersonDao implements GroupPersonDao {
 	
 	@Override
 	@Transactional(readOnly = true)
-	public List<Person> findPersonByKeyword(String keyword) {
-		keyword = "%" + keyword + "%";
+	public List<Person> findPersonByKeyword(String keywords) {
+		keywords = keywords.trim().replaceAll(" ", "|");
 		
-		logger.info("Keyword : " + keyword);
+		logger.info("Keyword : " + keywords);
 		
 		List<Person> persons = jdbcTemplate.query(
 				SELECT_ALL_GROUP_PERSON
-				+ " WHERE p.lastname LIKE ? OR p.firstname LIKE ? OR p.website LIKE ? OR g.name LIKE ?",
-				new Object[]{keyword, keyword, keyword, keyword},
+				+ " WHERE p.lastname REGEXP ? OR p.firstname REGEXP ? OR p.website REGEXP ? OR g.name REGEXP ?",
+				new Object[]{keywords, keywords, keywords, keywords},
 				new PersonGroupExtractor());
 
 		return persons;
@@ -169,38 +169,38 @@ public class JdbcGroupPersonDao implements GroupPersonDao {
 		
 		// Finally we save all new Person (we can't use batch insert because we can't retrieve auto-generated key from batch in JDBC)
 		g.getPersons().values().stream().filter(p -> p.getId() == 0).forEach(p -> {
-				KeyHolder keyHolder = new GeneratedKeyHolder();
+			KeyHolder keyHolder = new GeneratedKeyHolder();
 
-				jdbcTemplate.update(
-					new PreparedStatementCreator() {
-						@Override
-				        public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
-				            PreparedStatement ps = connection.prepareStatement(
-				            	"INSERT INTO `" + PERSON_TABLE_NAME + "` "
-				            	+ "(firstname, lastname, email, website, password, birthdate, group_id) values (?, ?, ?, ?, ?, ?, ?)",
-				            	new String[]{"id"});
-				            
-				            ps.setString(1, p.getFirstname());
-				            ps.setString(2, p.getLastname());
-				            ps.setString(3, p.getEmail());
-				            ps.setString(5, p.getPassword());
-				            ps.setInt(7, g.getId());
-				            
-				            if(p.getWebsite().isEmpty())
-					            ps.setString(4, null);
-				            else
-					            ps.setString(4, p.getWebsite());
-				            
-				            if(p.getBirthdate() == null)
-					            ps.setDate(6, null);
-				            else
-					            ps.setDate(6, Date.valueOf(p.getBirthdate()));
-				            return ps;
-				        }
-				    },
-					keyHolder);
-				
-				p.setId(keyHolder.getKey().intValue());		
+			jdbcTemplate.update(
+				new PreparedStatementCreator() {
+					@Override
+			        public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+			            PreparedStatement ps = connection.prepareStatement(
+			            	"INSERT INTO `" + PERSON_TABLE_NAME + "` "
+			            	+ "(firstname, lastname, email, website, password, birthdate, group_id) values (?, ?, ?, ?, ?, ?, ?)",
+			            	new String[]{"id"});
+			            
+			            ps.setString(1, p.getFirstname());
+			            ps.setString(2, p.getLastname());
+			            ps.setString(3, p.getEmail());
+			            ps.setString(5, p.getPassword());
+			            ps.setInt(7, g.getId());
+			            
+			            if(p.getWebsite().isEmpty())
+				            ps.setString(4, null);
+			            else
+				            ps.setString(4, p.getWebsite());
+			            
+			            if(p.getBirthdate() == null)
+				            ps.setDate(6, null);
+			            else
+				            ps.setDate(6, Date.valueOf(p.getBirthdate()));
+			            return ps;
+			        }
+			    },
+				keyHolder);
+			
+			p.setId(keyHolder.getKey().intValue());		
 		});
 	}
 

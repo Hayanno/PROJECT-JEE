@@ -25,11 +25,7 @@ public class SPersonService implements PersonService {
 
 	@Override
 	public void save(Person person) {
-		logger.info("Saving new person : " + person);
-		
 		person.setPassword(bCryptPasswordEncoder.encode(person.getPassword()));
-
-		logger.info("Encrypted password : " + person.getPassword());
 		
 		groupPersonDao.savePerson(person);
 	}

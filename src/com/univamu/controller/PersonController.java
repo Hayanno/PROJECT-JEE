@@ -19,7 +19,7 @@ import com.univamu.model.Group;
 import com.univamu.model.Person;
 import com.univamu.service.GroupService;
 import com.univamu.service.PersonService;
-import com.univamu.validator.PersonUpdateValidator;
+import com.univamu.validator.PersonValidator;
 
 @Controller
 @RequestMapping("/person")
@@ -34,7 +34,7 @@ public class PersonController {
 	GroupService groupService;
 	
 	@Autowired
-	PersonUpdateValidator personUpdateValidator;
+	PersonValidator personValidator;
 	
 	/**
 	 * Inject all available group inside every request
@@ -85,14 +85,15 @@ public class PersonController {
 	 * @return ModelAndView
 	 */
 	@RequestMapping(value = "/account", method = RequestMethod.POST)
-	public ModelAndView updateAccount(@ModelAttribute("personForm") Person personForm, BindingResult bindingResult) {
-	    ModelAndView mv = new ModelAndView("/account"); 
+	public ModelAndView updateAccount(@ModelAttribute("personForm") Person personForm, BindingResult bindingResult, Principal principal) {
+	    ModelAndView mv = new ModelAndView("/account");
 	    
-		personUpdateValidator.validate(personForm, bindingResult);
-		personForm.setPassword("");
+	    personForm.setId(personService.findByEmail(principal.getName()).getId());
+		personValidator.validate(personForm, bindingResult);
 		
 		if(bindingResult.hasErrors()) {
 			logger.info("bindingResult has errors, refreshing to account...");
+			personForm.setPassword("");
 		    mv.addObject("personForm", personForm);
 		    
 		    return mv;
@@ -102,6 +103,7 @@ public class PersonController {
 		
 		personService.update(personForm);
 
+		personForm.setPassword("");
 	    mv.addObject("personForm", personForm);
 	    
 	    return mv;

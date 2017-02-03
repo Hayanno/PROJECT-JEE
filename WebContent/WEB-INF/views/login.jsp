@@ -3,9 +3,10 @@
 
 <form method="POST" action="${pageContext.request.contextPath}/login" class="form-signin">
     <h2 class="form-heading">Connectez vous</h2>
+    
+    <span>${message}</span>
 
     <div class="form-group ${error != null ? 'has-error' : ''} label-floating">
-        <span>${message}</span>
         <label for="username" class="control-label">Adresse mail</label>
         <input name="username" type="text" class="form-control" value="" />
     </div>

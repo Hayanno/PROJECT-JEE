@@ -33,8 +33,6 @@ public class PersonValidator implements Validator {
 	public void validate(Object o, Errors err) {
 		Person person = (Person) o;
 		
-		logger.info("Person to validate : " + person);
-		
 		ValidationUtils.rejectIfEmptyOrWhitespace(err, "firstname", "NotEmpty");
 		ValidationUtils.rejectIfEmptyOrWhitespace(err, "lastname", "NotEmpty");
 		ValidationUtils.rejectIfEmptyOrWhitespace(err, "password", "NotEmpty");
@@ -42,7 +40,7 @@ public class PersonValidator implements Validator {
 		if(!EmailValidator.getInstance().isValid(person.getEmail()))
 			err.rejectValue("email", "NotValid.personForm.email");
 		else
-			if(personService.findByEmail(person.getEmail()).getId() != 0)
+			if(personService.findByEmail(person.getEmail()).getId() != 0 && personService.findByEmail(person.getEmail()).getId() != person.getId())
 				err.rejectValue("email", "Duplicate.personForm.email");
 			else
 				ValidationUtils.rejectIfEmptyOrWhitespace(err, "email", "NotEmpty");

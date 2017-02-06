@@ -1,7 +1,11 @@
 package com.univamu.controller;
 
 import java.security.Principal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Locale;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,7 +46,41 @@ public class PersonController {
 	 */
 	@ModelAttribute("groups")
 	public Collection<Group> listGroups() {
+		/*ArrayList<Group> groups = (ArrayList<Group>) groupService.findAll();
+		
+		for(int i = 1; i <= 1500; i++) {
+			Person p = new Person();
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+			formatter = formatter.withLocale(Locale.FRENCH);
+			LocalDate date = LocalDate.parse("12-12-" + (1960 + i), formatter);
+			
+			p.setBirthdate(date);
+			p.setEmail("email" + i + "@email.fr");
+			p.setFirstname("Firstname" + i);
+			p.setLastname("Lastname" + i);
+			p.setGroup(groups.get(i%groups.size()));
+			p.setPassword("bla");
+			p.setWebsite("site" + i + ".fr");
+			
+			personService.save(p);
+		}*/
+		
 		return groupService.findAll();
+	}
+	
+	/**
+	 * Display person page with every information on the user with the given id
+	 * @param principal
+	 * @return ModelAndView
+	 */
+	@RequestMapping(method = RequestMethod.GET)
+	public ModelAndView display(@RequestParam long id) {
+		Person person = personService.find(id);
+	    ModelAndView mv = new ModelAndView("/person"); 
+	    
+	    mv.addObject("person", person);
+	    
+	    return mv;
 	}
 	
 	/**
@@ -95,6 +133,7 @@ public class PersonController {
 			logger.info("bindingResult has errors, refreshing to account...");
 			personForm.setPassword("");
 		    mv.addObject("personForm", personForm);
+		    mv.addObject("error", true);
 		    
 		    return mv;
 		}
@@ -105,6 +144,7 @@ public class PersonController {
 
 		personForm.setPassword("");
 	    mv.addObject("personForm", personForm);
+	    mv.addObject("success", true);
 	    
 	    return mv;
 	}

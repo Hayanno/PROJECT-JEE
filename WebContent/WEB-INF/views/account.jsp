@@ -2,6 +2,17 @@
 <%@ include file="/WEB-INF/views/assets/navbar.jsp"%>
 
 <form:form method="POST" modelAttribute="personForm" class="form-signin">
+
+	<div class="alert alert-dismissible alert-danger ${error ? '' : 'hidden'}">
+	  	<button type="button" class="close" data-dismiss="alert">×</button>
+	 	<strong>Une erreur est survenu !</strong> Merci de réessayer en suivant les suggestions.
+	</div>
+	
+	<div class="alert alert-dismissible alert-success ${success ? '' : 'hidden'}">
+	  	<button type="button" class="close" data-dismiss="alert">×</button>
+	 	Vos paramètres ont bien été mis à jour.
+	</div>
+
     <h2 class="form-heading">Votre compte</h2>
     
     <spring:bind path="id">

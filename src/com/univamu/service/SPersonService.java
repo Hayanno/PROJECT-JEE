@@ -29,6 +29,11 @@ public class SPersonService implements PersonService {
 		
 		groupPersonDao.savePerson(person);
 	}
+	
+	@Override
+	public Person find(long id) {
+		return groupPersonDao.findPersonById(id);
+	}
 
 	@Override
 	public Person findByEmail(String email) {

@@ -8,9 +8,18 @@
 <script src="${contextPath}/js/material.min.js"></script>
 <script src="${contextPath}/js/datetimepicker.js"></script>
 <script src="${contextPath}/js/ripples.min.js"></script>
+<script src="${contextPath}/DataTables/datatables.min.js"></script>
 <script>
 	$.material.init();
-	$('.datetimepicker').bootstrapMaterialDatePicker();
+	$('.datetimepicker').bootstrapMaterialDatePicker({time: false});
+	$(document).ready(function() {
+	    $('.table').DataTable( {
+            "ordering": false,
+            "language": {
+                "url": "${contextPath}/DataTables/french.json"
+            }
+        } );
+	} );
 </script>
 </body>
 </html>

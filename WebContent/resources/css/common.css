@@ -98,3 +98,12 @@ html, body, .container, .well {
     margin-top: 30px;
     margin-bottom: 100px;
 }
+
+.person-tr {
+	cursor: pointer;
+}
+
+#person-view {
+    margin-top: 30px;
+    margin-bottom: 100px;
+}

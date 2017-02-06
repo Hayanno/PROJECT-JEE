@@ -13,7 +13,7 @@ public interface PersonService {
 	public void save(Person person);
 	
 	/**
-	 * find one person from his email address and associate his group
+	 * find one person from his email address and associate it with his group
 	 * @param email
 	 * @return Person
 	 */
@@ -45,4 +45,11 @@ public interface PersonService {
 	 * @return Collection<Person>
 	 */
 	public Collection<Person> findByKeyword(String keyword);
+
+	/**
+	 * find one Person from his id and associate it with his group
+	 * @param id
+	 * @return
+	 */
+	public Person find(long id);
 }

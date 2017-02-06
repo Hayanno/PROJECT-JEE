@@ -13,6 +13,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.univamu.model.Group;
 import com.univamu.model.Person;
@@ -68,20 +69,23 @@ public class LoginController {
 	 * @return String
 	 */
 	@RequestMapping(value = "/registration", method = RequestMethod.POST)
-	public String registration(@ModelAttribute("personForm") Person personForm, BindingResult bindingResult, HttpServletRequest request) {
+	public ModelAndView registration(@ModelAttribute("personForm") Person personForm, BindingResult bindingResult, HttpServletRequest request) {
 		personValidator.validate(personForm, bindingResult);
 		
 		if(bindingResult.hasErrors()) {
 			logger.info("bindingResult has errors, refreshing to registration...");
-			return "registration";
+			return new ModelAndView("/registration");
 		}
 
 		logger.info("Registering new person : " + personForm);
 		
 		personService.save(personForm);
 		securityService.autologin(personForm.getEmail(), personForm.getPassword(), request);
+	    
+		ModelAndView mv = new ModelAndView("/welcome");
+	    mv.addObject("success", true);
 		
-		return "redirect:/welcome";
+		return mv;
 	}
 
 	/**

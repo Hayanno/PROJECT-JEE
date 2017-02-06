@@ -26,6 +26,7 @@
     <link rel="stylesheet" type="text/css" href="${contextPath}/css/material.css" />
     <link rel="stylesheet" type="text/css" href="${contextPath}/css/datetimepicker.css" />
  	<link rel="stylesheet" type="text/css" href="${contextPath}/css/ripples.min.css" />
+ 	<link rel="stylesheet" type="text/css" href="${contextPath}/DataTables/datatables.min.css"/>
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>

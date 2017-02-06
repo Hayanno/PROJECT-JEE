@@ -21,7 +21,7 @@
 			</thead>
 			<tbody>
 				<c:forEach var="person" items="${persons}">
-					<tr>
+					<tr onclick="window.document.location='${pageContext.request.contextPath}/person?id=${person.getId()}';" class="person-tr">
 						<td><c:out value="${person.getId()}"/></td>
 						<td><c:out value="${person.getFirstname()}"/></td>
 						<td><c:out value="${person.getLastname()}"/></td>
